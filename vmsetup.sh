@@ -11,16 +11,16 @@ export LANG=C
 export LC_ALL=C
 
 # template vm vars
-TEMPLATE_VMID="900"
-TEMPLATE_VMSTORAGE="local"
-SNIPPET_STORAGE="local"
-VMDISK_OPTIONS=",discard=on"
+TEMPLATE_VMID="9000"
+TEMPLATE_VMSTORAGE="L2"
+SNIPPET_STORAGE="L2"
+VMDISK_OPTIONS=",writeback,discard=on"
 
 TEMPLATE_IGNITION="fcos-base-tmplt.yaml"
 
 # fcos version
 STREAMS=stable
-VERSION=32.20201018.3.0
+VERSION=$(curl -s https://raw.githubusercontent.com/coreos/fedora-coreos-streams/main/streams/stable.json | jq ".architectures.x86_64.artifacts.qemu.release" | sed -e 's/^"//' -e 's/"$//')
 PLATEFORM=qemu
 BASEURL=https://builds.coreos.fedoraproject.org
 
@@ -78,9 +78,9 @@ esac
 # create a new VM
 echo "Create fedora coreos vm ${VMID}"
 qm create ${TEMPLATE_VMID} --name fcos-tmplt
-qm set ${TEMPLATE_VMID} --memory 4096 \
-			--cpu host \
-			--cores 4 \
+qm set ${TEMPLATE_VMID} --memory 8192 \
+			--cpu host,flags=+aes \
+			--cores 6 \
 			--agent enabled=1 \
 			--autostart \
 			--onboot 1 \
@@ -89,7 +89,7 @@ qm set ${TEMPLATE_VMID} --memory 4096 \
 			--boot c --bootdisk scsi0
 
 template_vmcreated=$(date +%Y-%m-%d)
-qm set ${TEMPLATE_VMID} --description "Fedora CoreOS - Geco-iT Template
+qm set ${TEMPLATE_VMID} --description "Fedora CoreOS Template
 
  - Version             : ${VERSION}
  - Cloud-init          : true

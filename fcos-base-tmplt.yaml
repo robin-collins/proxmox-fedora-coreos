@@ -1,18 +1,19 @@
 # motd script
-    - path: /usr/local/bin/geco-motd
+    - path: /usr/local/bin/proxmox-motd
       mode: 0755
       contents:
         inline: |
           #!/bin/bash
           
-          OUT=/etc/console-login-helper-messages/motd.d/22_geco.motd
+          OUT=/etc/console-login-helper-messages/motd.d/22_proxmox.motd
           
           echo -e "\nWelcome on a server powered by\n" > ${OUT}
-          echo -e '\e[33m    ______                      _ ______' >> ${OUT}
-          echo -e '\e[33m   / ____/__  _________        (_)_  __/' >> ${OUT}
-          echo -e '\e[33m  / / __/ _ \/ ___/ __ \  __   / / / /' >> ${OUT}
-          echo -e '\e[33m / /_/ /  __/ /__/ /_/ / |__| / / / /' >> ${OUT}
-          echo -e '\e[33m \____/\___/\___/\____/      /_/ /_/\n\n' >> ${OUT}
+          echo -e '\e[33m  _ __  _ __ _____  ___ __ ___   _____  __' >> ${OUT}
+          echo -e '\e[33m | '_ \| '__/ _ \ \/ / '_ ` _ \ / _ \ \/ /' >> ${OUT}
+          echo -e '\e[33m | |_) | | | (_) >  <| | | | | | (_) >  < ' >> ${OUT}
+          echo -e '\e[33m | .__/|_|  \___/_/\_\_| |_| |_|\___/_/\_\' >> ${OUT}
+          echo -e '\e[33m | |                                      ' >> ${OUT}
+          echo -e '\e[33m |_|                                      ' >> ${OUT}
           eval "$(grep -E "^(NAME=|VARIANT=)" /etc/os-release)" && echo -e "\e[33mOperating System:\e[0m ${NAME} ${VARIANT}" >> ${OUT}
           eval "$(grep ^OSTREE_VERSION /etc/os-release)" && echo -e "\e[33mVersion:\e[0m ${OSTREE_VERSION}" >> ${OUT}
           echo -e "\e[33mKernel:\e[0m $(uname -r)" >> ${OUT}
@@ -29,16 +30,11 @@
           echo -e "\e[33mPublic IPv4 Address:\e[0m $(curl https://ipv4.icanhazip.com)\n" >> ${OUT}
 
 # apply cloudinit script
-    - path: /usr/local/bin/geco-cloudinit
+    - path: /usr/local/bin/proxmox-cloudinit
       mode: 0755
       contents:
         inline: |
           #!/bin/bash
-          #
-          #  Copyright (c) 2020 Geco-iT Team - All right reserved
-          #  Geco-iT <contact@geco-it.fr>
-          #
-          #  $Id: geco-cloudinit 2020-11-26 18:36:24Z cduchenoy $
           #
           #  Apply Basic Cloudinit Settings
           #
@@ -157,10 +153,10 @@
             }
             # username
             NEWUSERNAME="$(${YQ} ${CIPATH}/user-data 'user' 2> /dev/null)" || true # cant be empty if no cloudinit user defined
-            [[ "x${NEWUSERNAME}" == "x" ]] && NEWUSERNAME="admin" # NEWUSERNAME="core" use "admin" on geco-template
+            [[ "x${NEWUSERNAME}" == "x" ]] && NEWUSERNAME="admin" # NEWUSERNAME="core" use "admin" on proxmox-template
             getent passwd ${NEWUSERNAME} &> /dev/null || {
               echo -n "[INFO]: Cloudinit: add sytem user: ${NEWUSERNAME}... "
-              useradd --comment "Geco-iT CoreOS Administrator" --create-home \
+              useradd --comment "Fedora CoreOS Administrator" --create-home \
                       --groups adm,wheel,sudo,systemd-journal,docker ${NEWUSERNAME} &> /dev/null || { echo "[failed]"; exit 1; }
               echo "[done]"
             }
@@ -246,7 +242,7 @@
             nmcli connection reload
             nmcli networking off
             nmcli networking on
-            systemctl restart geco-motd.service
+            systemctl restart proxmox-motd.service
             systemctl restart console-login-helper-messages-motdgen.service
           }
 
@@ -260,19 +256,20 @@
 
           exit 0 
 
-# geco-issue
-    - path: /etc/console-login-helper-messages/issue.d/00_geco.issue
+# proxmox-issue
+    - path: /etc/console-login-helper-messages/issue.d/00_proxmox.issue
       mode: 0644
       contents:
         inline: |
 
           Welcome on a server powered by
+           _ __  _ __ _____  ___ __ ___   _____  __
+          | '_ \| '__/ _ \ \/ / '_ ` _ \ / _ \ \/ /
+          | |_) | | | (_) >  <| | | | | | (_) >  < 
+          | .__/|_|  \___/_/\_\_| |_| |_|\___/_/\_\
+          | |                                      
+          |_|                                      
 
-            ,----.                                   ,--. ,--------.
-           '  .-./     ,---.   ,---.  ,---.  ,-----. `--' '--.  .--'
-           |  | .---. | .-. : | .--' | .-. | '-----' ,--.    |  |
-           '  '--'  | \\   --. \\ `--. ' '-' '         |  |    |  |
-            `------'   `----'  `---'  `---'          `--'    `--'
             
           .
 
@@ -286,38 +283,38 @@
           kernel.printk=4
 
 
-# geco-motd.service
+# proxmox-motd.service
 systemd:
   units:
-    - name: geco-motd.service
+    - name: proxmox-motd.service
       enabled: true
       contents: |
         [Unit]
-        Description=Geco-iT Motd
+        Description=Proxmox Motd
         Before=console-login-helper-messages-motdgen.service
         After=network-online.target
 
         [Service]
         Type=oneshot
-        ExecStart=/usr/local/bin/geco-motd
+        ExecStart=/usr/local/bin/proxmox-motd
         RemainAfterExit=yes
 
         [Install]
         WantedBy=multi-user.target
 
-# geco-cloudinit: apply cloudinit settings on boot
-    - name: geco-cloudinit.service
+# proxmox-cloudinit: apply cloudinit settings on boot
+    - name: proxmox-cloudinit.service
       enabled: true
       contents: |
         [Unit]
-        Description=Geco-iT Cloudinit
+        Description=Proxmox Cloudinit
         Wants=network-online.target
         After=network.target network-online.target
  
         [Service]
         Type=oneshot
         TimeoutStartSec=0
-        ExecStart=/usr/local/bin/geco-cloudinit
+        ExecStart=/usr/local/bin/proxmox-cloudinit
         RemainAfterExit=yes
  
         [Install]
@@ -328,7 +325,7 @@ systemd:
       enabled: true
       contents: |
         [Unit]
-        Description=Geco-iT Setup Qemu Guest Agent
+        Description=Proxmox Setup Qemu Guest Agent
         After=network-online.target
         Require=network-online.target
         ConditionKernelCommandLine=ignition.platform.id=qemu

@@ -7,7 +7,7 @@ phase="$2"
 
 # global vars
 COREOS_TMPLT=/opt/fcos-tmplt.yaml
-COREOS_FILES_PATH=/etc/pve/geco-pve/coreos
+COREOS_FILES_PATH=/etc/pve/coreos
 YQ="/usr/local/bin/yq read --exitStatus --printMode v --stripComments --"
 
 # ==================================================================================================================================================================
@@ -15,22 +15,22 @@ YQ="/usr/local/bin/yq read --exitStatus --printMode v --stripComments --"
 #
 setup_fcoreosct()
 {
-        local CT_VER=0.7.0
+        local CT_VER=0.15.0
         local ARCH=x86_64
         local OS=unknown-linux-gnu # Linux
-        local DOWNLOAD_URL=https://github.com/coreos/fcct/releases/download
+        local DOWNLOAD_URL=https://github.com/coreos/butane/releases/download
  
         [[ -x /usr/local/bin/fcos-ct ]]&& [[ "x$(/usr/local/bin/fcos-ct --version | awk '{print $NF}')" == "x${CT_VER}" ]]&& return 0
         echo "Setup Fedora CoreOS config transpiler..."
         rm -f /usr/local/bin/fcos-ct
-        wget --quiet --show-progress ${DOWNLOAD_URL}/v${CT_VER}/fcct-${ARCH}-${OS} -O /usr/local/bin/fcos-ct
+        wget --quiet --show-progress ${DOWNLOAD_URL}/v${CT_VER}/butane-${ARCH}-${OS} -O /usr/local/bin/fcos-ct
         chmod 755 /usr/local/bin/fcos-ct
 }
 setup_fcoreosct
 
 setup_yq()
 {
-        local VER=3.4.1
+        local VER=4.27.5
 
         [[ -x /usr/bin/wget ]]&& download_command="wget --quiet --show-progress --output-document"  || download_command="curl --location --output"
         [[ -x /usr/local/bin/yq ]]&& [[ "x$(/usr/local/bin/yq --version | awk '{print $NF}')" == "x${VER}" ]]&& return 0
@@ -66,12 +66,12 @@ then
 	}
 
 	echo -n "Fedora CoreOS: Generate yaml users block... "
-	echo -e "# This file is managed by Geco-iT hook-script. Do not edit.\n" > ${COREOS_FILES_PATH}/${vmid}.yaml
+	echo -e "# This file is managed by proxmox hook-script. Do not edit.\n" > ${COREOS_FILES_PATH}/${vmid}.yaml
 	echo -e "variant: fcos\nversion: 1.1.0" >> ${COREOS_FILES_PATH}/${vmid}.yaml
 	echo -e "# user\npasswd:\n  users:" >> ${COREOS_FILES_PATH}/${vmid}.yaml
 	ciuser="$(qm cloudinit dump ${vmid} user 2> /dev/null | grep ^user: | awk '{print $NF}')"
 	echo "    - name: \"${ciuser:-admin}\"" >> ${COREOS_FILES_PATH}/${vmid}.yaml
-	echo "      gecos: \"Geco-iT CoreOS Administrator\"" >> ${COREOS_FILES_PATH}/${vmid}.yaml
+	echo "      gecos: \"Proxmox CoreOS Administrator\"" >> ${COREOS_FILES_PATH}/${vmid}.yaml
 	echo "      password_hash: '${cipasswd}'" >> ${COREOS_FILES_PATH}/${vmid}.yaml
 	echo '      groups: [ "sudo", "docker", "adm", "wheel", "systemd-journal" ]' >> ${COREOS_FILES_PATH}/${vmid}.yaml
 	echo '      ssh_authorized_keys:' >> ${COREOS_FILES_PATH}/${vmid}.yaml

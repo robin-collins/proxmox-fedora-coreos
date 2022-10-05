@@ -1,6 +1,6 @@
 # fedora-coreos-proxmox
 
-Fedora CoreOS template for proxmox with cloudinit support
+Will create a Fedora CoreOS template for proxmox with cloudinit support from the latest stream stable release.
 
 ## Create FCOS VM Template
 
@@ -8,10 +8,11 @@ Fedora CoreOS template for proxmox with cloudinit support
 
 * **vmsetup.sh**
 
+
 ```
-TEMPLATE_VMID="1000"                     # Template Proxmox VMID 
-TEMPLATE_VMSTORAGE="thin-ssd"           # Proxmox storage  
-SNIPPET_STORAGE="local"                 # Snippets storage for hook and ignition file
+TEMPLATE_VMID="9000"                     # Template Proxmox VMID 
+TEMPLATE_VMSTORAGE="L2"           # Proxmox storage  
+SNIPPET_STORAGE="L2"                 # Snippets storage for hook and ignition file
 VMDISK_OPTIONS=",discard=on"            # Add options to vmdisk
 ```
 
@@ -24,9 +25,9 @@ it contains :
 
 * Correct fstrim service with no fstab file
 * Install qemu-guest-agent on first boot
-* Install Geco-iT CloudInit wrapper
+* Install Proxmox CloudInit wrapper
 * Raise console message logging level from DEBUG (7) to WARNING (4)
-* Add Geco-iT motd/issue
+* Add motd/issue
 
 ### Script output
 ```
